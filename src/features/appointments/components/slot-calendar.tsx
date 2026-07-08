@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useWorkingHours, useScheduleOverrides } from "@/features/schedule/hooks/use-schedule";
 import { useBookedSlots } from "@/features/appointments/hooks/use-appointments";
+import { useDoctor } from "@/features/doctors/hooks/use-doctors";
 import {
   formatSlotDate,
   formatSlotTime,
@@ -35,6 +36,7 @@ export function SlotCalendar({
   );
   const [weekStart, setWeekStart] = useState(currentWeekStart);
 
+  const { data: doctor } = useDoctor(doctorId);
   const { data: workingHours = [], isLoading: hoursLoading } =
     useWorkingHours(doctorId);
   const { data: overrides = [], isLoading: overridesLoading } =
@@ -42,6 +44,7 @@ export function SlotCalendar({
   const { data: bookedSlots = [], isLoading: bookedLoading } =
     useBookedSlots(doctorId);
 
+  const slotIntervalMinutes = doctor?.slot_interval_minutes ?? durationMinutes;
   const isLoading = hoursLoading || overridesLoading || bookedLoading;
 
   const days = useMemo(() => {
@@ -52,6 +55,7 @@ export function SlotCalendar({
         ? generateSlotsForDay(
             date,
             durationMinutes,
+            slotIntervalMinutes,
             workingHours,
             overrides,
             bookedSlots,
@@ -59,7 +63,14 @@ export function SlotCalendar({
         : [];
       return { date, window, slots };
     });
-  }, [weekStart, workingHours, overrides, bookedSlots, durationMinutes]);
+  }, [
+    weekStart,
+    workingHours,
+    overrides,
+    bookedSlots,
+    durationMinutes,
+    slotIntervalMinutes,
+  ]);
 
   const canGoPrev = weekStart > currentWeekStart;
 

@@ -1,11 +1,15 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   fetchAllProcedures,
   fetchDoctorById,
   fetchDoctors,
   fetchProceduresForDoctor,
+  updateDoctorProfile,
+  updateDoctorSlotInterval,
+  uploadDoctorAvatar,
+  type DoctorProfileInput,
 } from "@/features/doctors/api/get-doctors";
 
 export function useDoctors() {
@@ -35,5 +39,39 @@ export function useProcedures() {
   return useQuery({
     queryKey: ["procedures"],
     queryFn: fetchAllProcedures,
+  });
+}
+
+function useInvalidateDoctor(doctorId: string | null) {
+  const queryClient = useQueryClient();
+  return () => {
+    queryClient.invalidateQueries({ queryKey: ["doctors"] });
+    queryClient.invalidateQueries({ queryKey: ["doctors", doctorId] });
+  };
+}
+
+export function useUpdateDoctorProfile(doctorId: string) {
+  const invalidate = useInvalidateDoctor(doctorId);
+  return useMutation({
+    mutationFn: (input: DoctorProfileInput) =>
+      updateDoctorProfile(doctorId, input),
+    onSuccess: invalidate,
+  });
+}
+
+export function useUploadDoctorAvatar(doctorId: string) {
+  const invalidate = useInvalidateDoctor(doctorId);
+  return useMutation({
+    mutationFn: (file: File) => uploadDoctorAvatar(doctorId, file),
+    onSuccess: invalidate,
+  });
+}
+
+export function useUpdateDoctorSlotInterval(doctorId: string) {
+  const invalidate = useInvalidateDoctor(doctorId);
+  return useMutation({
+    mutationFn: (slotIntervalMinutes: number) =>
+      updateDoctorSlotInterval(doctorId, slotIntervalMinutes),
+    onSuccess: invalidate,
   });
 }

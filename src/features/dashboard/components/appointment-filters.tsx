@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { useDoctors } from "@/features/doctors/hooks/use-doctors";
+import { cn } from "@/lib/utils";
 
 interface AppointmentFiltersProps {
   status: string;
@@ -19,6 +20,8 @@ interface AppointmentFiltersProps {
   onStatusChange: (value: string) => void;
   onDoctorChange: (value: string) => void;
   onDateChange: (value: string) => void;
+  /** Week view controls its own date range, so the single-date field is hidden. */
+  showDate?: boolean;
 }
 
 export function AppointmentFilters({
@@ -28,6 +31,7 @@ export function AppointmentFilters({
   onStatusChange,
   onDoctorChange,
   onDateChange,
+  showDate = true,
 }: AppointmentFiltersProps) {
   const { data: doctors = [] } = useDoctors();
 
@@ -41,7 +45,12 @@ export function AppointmentFilters({
 
   return (
     <Card className="mb-6 border-slate-200/80 shadow-sm">
-      <CardContent className="grid gap-4 pt-6 sm:grid-cols-3">
+      <CardContent
+        className={cn(
+          "grid gap-4 pt-6",
+          showDate ? "sm:grid-cols-3" : "sm:grid-cols-2",
+        )}
+      >
         <div className="space-y-2">
           <Label htmlFor="filter-status">Статус</Label>
           <Select
@@ -94,15 +103,17 @@ export function AppointmentFilters({
           </Select>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="filter-date">Дата</Label>
-          <Input
-            id="filter-date"
-            type="date"
-            value={date}
-            onChange={(e) => onDateChange(e.target.value)}
-          />
-        </div>
+        {showDate && (
+          <div className="space-y-2">
+            <Label htmlFor="filter-date">Дата</Label>
+            <Input
+              id="filter-date"
+              type="date"
+              value={date}
+              onChange={(e) => onDateChange(e.target.value)}
+            />
+          </div>
+        )}
       </CardContent>
     </Card>
   );

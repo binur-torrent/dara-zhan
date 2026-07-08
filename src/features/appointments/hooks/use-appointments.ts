@@ -7,6 +7,7 @@ import {
   fetchDoctorAppointments,
   fetchNurseAppointments,
   updateAppointmentStatus,
+  type NurseAppointmentFilters,
 } from "@/features/appointments/api/appointments";
 import type { AppointmentStatus } from "@/types";
 import type { BookingFormValues } from "@/features/appointments/schemas/booking-schema";
@@ -31,11 +32,7 @@ export function useCreateAppointment() {
   });
 }
 
-export function useNurseAppointments(filters?: {
-  status?: AppointmentStatus | "all";
-  doctorId?: string;
-  date?: string;
-}) {
+export function useNurseAppointments(filters?: NurseAppointmentFilters) {
   return useQuery({
     queryKey: ["nurse-appointments", filters],
     queryFn: () => fetchNurseAppointments(filters),

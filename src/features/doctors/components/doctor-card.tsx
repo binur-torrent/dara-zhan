@@ -14,8 +14,17 @@ export function DoctorCard({ doctor, showBookLink = true }: DoctorCardProps) {
   return (
     <Card className="h-full border-slate-200/80 shadow-sm transition-shadow duration-200 hover:shadow-md">
       <CardHeader className="pb-3">
-        <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
-          <Stethoscope className="h-6 w-6" aria-hidden />
+        <div className="mb-3 flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl bg-primary/10 text-primary">
+          {doctor.avatar_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={doctor.avatar_url}
+              alt={doctor.name}
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <Stethoscope className="h-6 w-6" aria-hidden />
+          )}
         </div>
         <CardTitle className="text-lg font-semibold text-slate-900">
           {doctor.name}

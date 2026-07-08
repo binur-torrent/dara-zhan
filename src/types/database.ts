@@ -8,6 +8,8 @@ export interface Doctor {
   specialty: string;
   bio: string | null;
   avatar_url: string | null;
+  /** Minutes between bookable slot start times (10/15/20/30/45/60). */
+  slot_interval_minutes: number;
   created_at: string;
 }
 
@@ -75,6 +77,9 @@ export interface DoctorWorkingHours {
   day_of_week: number;
   start_time: string;
   end_time: string;
+  /** Optional lunch break that splits the day into two bookable windows. */
+  break_start_time: string | null;
+  break_end_time: string | null;
 }
 
 /** A per-date exception that opens, closes, or customizes a specific day,

@@ -11,6 +11,7 @@ import {
 import { SiteShell } from "@/components/layout/site-shell";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { DoctorsCarousel } from "@/features/doctors/components/doctors-carousel";
 import { cn } from "@/lib/utils";
 
 const features = [
@@ -47,7 +48,7 @@ export default function HomePage() {
             <p className="mb-4 text-sm font-medium uppercase tracking-wider text-primary">
               Система записи в клинику
             </p>
-            <h1 className="text-4xl font-semibold tracking-tight text-slate-900 sm:text-5xl">
+            <h1 className="text-balance text-4xl font-semibold tracking-tight text-slate-900 sm:text-5xl">
               Забота о здоровье,{" "}
               <span className="text-primary">стало проще</span>
             </h1>
@@ -103,24 +104,32 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="border-t border-slate-200/80 bg-slate-50">
-        <div className="mx-auto max-w-6xl px-4 py-16 text-center sm:px-6">
-          <h2 className="text-2xl font-semibold text-slate-900">
-            Готовы записаться на приём?
-          </h2>
-          <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-            Выберите врача и удобное время — остальное мы возьмём на себя.
-          </p>
-          <Link
-            href="/book"
-            className={cn(buttonVariants({ size: "lg" }), "mt-6 cursor-pointer")}
-          >
-            Начать запись
-          </Link>
+      <section className="border-t border-slate-200/80 bg-white">
+        <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+          <div className="mb-10 text-center">
+            <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
+              Наши врачи
+            </h2>
+            <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+              Специалисты клиники Dara-Zhan, готовые вам помочь.
+            </p>
+          </div>
+          <DoctorsCarousel />
+          <div className="mt-8 flex justify-center">
+            <Link
+              href="/doctors"
+              className={cn(
+                buttonVariants({ variant: "outline" }),
+                "cursor-pointer",
+              )}
+            >
+              Все врачи
+            </Link>
+          </div>
         </div>
       </section>
 
-      <section className="border-t border-slate-200/80 bg-white">
+      <section className="border-t border-slate-200/80 bg-slate-50/60">
         <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
           <div className="mb-10 text-center">
             <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
@@ -164,9 +173,12 @@ export default function HomePage() {
                   <p className="text-sm font-semibold text-slate-900">
                     Телефон
                   </p>
-                  <p className="text-sm text-muted-foreground">
-                    +7 (700) 000-00-00
-                  </p>
+                  <a
+                    href="tel:+77777635444"
+                    className="text-sm text-muted-foreground transition-colors duration-200 hover:text-primary"
+                  >
+                    +7 777 763 54 44
+                  </a>
                 </div>
               </div>
             </div>

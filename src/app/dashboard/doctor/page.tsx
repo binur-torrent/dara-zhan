@@ -4,6 +4,7 @@ import { DashboardShell } from "@/features/dashboard/components/dashboard-shell"
 import { DoctorSchedule } from "@/features/appointments/components/doctor-schedule";
 import { WorkingHoursEditor } from "@/features/schedule/components/working-hours-editor";
 import { ScheduleOverrides } from "@/features/schedule/components/schedule-overrides";
+import { DoctorProfileForm } from "@/features/doctors/components/doctor-profile-form";
 import { useUserProfile } from "@/features/auth/hooks/use-auth";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -29,6 +30,9 @@ export default function DoctorDashboardPage() {
           <TabsTrigger value="hours" className="cursor-pointer">
             Часы работы
           </TabsTrigger>
+          <TabsTrigger value="profile" className="cursor-pointer">
+            Профиль
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="appointments" className="mt-4">
@@ -43,6 +47,18 @@ export default function DoctorDashboardPage() {
               <WorkingHoursEditor doctorId={profile.doctor_id} />
               <ScheduleOverrides doctorId={profile.doctor_id} />
             </>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              Профиль врача не найден.
+            </p>
+          )}
+        </TabsContent>
+
+        <TabsContent value="profile" className="mt-4">
+          {isLoading ? (
+            <Skeleton className="h-96 w-full rounded-xl" />
+          ) : profile?.doctor_id ? (
+            <DoctorProfileForm doctorId={profile.doctor_id} />
           ) : (
             <p className="text-sm text-muted-foreground">
               Профиль врача не найден.

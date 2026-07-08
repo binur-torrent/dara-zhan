@@ -36,11 +36,19 @@ export async function fetchBookedSlots(
   return (data as BookedSlot[]) ?? [];
 }
 
-export async function fetchNurseAppointments(filters?: {
+export interface NurseAppointmentFilters {
   status?: AppointmentStatus | "all";
   doctorId?: string;
+  /** Single-day filter (list view). */
   date?: string;
-}): Promise<AppointmentWithRelations[]> {
+  /** Inclusive date-range filter (week view). Takes precedence over `date`. */
+  dateFrom?: string;
+  dateTo?: string;
+}
+
+export async function fetchNurseAppointments(
+  filters?: NurseAppointmentFilters,
+): Promise<AppointmentWithRelations[]> {
   const supabase = createClient();
   let query = supabase
     .from("appointments")
@@ -59,7 +67,11 @@ export async function fetchNurseAppointments(filters?: {
   if (filters?.doctorId) {
     query = query.eq("doctor_id", filters.doctorId);
   }
-  if (filters?.date) {
+  if (filters?.dateFrom && filters?.dateTo) {
+    const start = `${filters.dateFrom}T00:00:00.000Z`;
+    const end = `${filters.dateTo}T23:59:59.999Z`;
+    query = query.gte("scheduled_at", start).lte("scheduled_at", end);
+  } else if (filters?.date) {
     const start = `${filters.date}T00:00:00.000Z`;
     const end = `${filters.date}T23:59:59.999Z`;
     query = query.gte("scheduled_at", start).lte("scheduled_at", end);

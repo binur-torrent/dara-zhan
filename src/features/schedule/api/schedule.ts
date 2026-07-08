@@ -19,6 +19,8 @@ export interface WorkingHoursInput {
   dayOfWeek: number;
   startTime: string;
   endTime: string;
+  breakStartTime?: string | null;
+  breakEndTime?: string | null;
 }
 
 /** Replaces the doctor's entire weekly template with the given entries. */
@@ -44,6 +46,8 @@ export async function saveWorkingHours(
         day_of_week: entry.dayOfWeek,
         start_time: entry.startTime,
         end_time: entry.endTime,
+        break_start_time: entry.breakStartTime ?? null,
+        break_end_time: entry.breakEndTime ?? null,
       })),
     );
   if (insertError) throw insertError;

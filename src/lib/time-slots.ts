@@ -31,6 +31,10 @@ export function formatSlotTime(date: Date): string {
  * Effective working window for a doctor on a given date.
  * A date-specific override always wins over the weekly template — it can
  * close a normally-open day, open a normally-closed one, or set custom hours.
+ *
+ * Returns the outer span of the day (ignoring any lunch break); use
+ * {@link getEffectiveDayWindows} to get bookable sub-windows split around a
+ * lunch break.
  */
 export function getEffectiveDayWindow(
   date: Date,
@@ -64,6 +68,51 @@ export function getEffectiveDayWindow(
   };
 }
 
+/**
+ * Bookable windows for a date, split around a lunch break when one is set on
+ * the weekly template. Date-specific overrides stay a single window (no break).
+ */
+export function getEffectiveDayWindows(
+  date: Date,
+  workingHours: DoctorWorkingHours[],
+  overrides: DoctorScheduleOverride[],
+): DayWindow[] {
+  const dateKey = formatSlotDate(date);
+  const override = overrides.find((o) => o.date === dateKey);
+  const window = getEffectiveDayWindow(date, workingHours, overrides);
+  if (!window) return [];
+
+  // Overrides never carry a break.
+  if (override) return [window];
+
+  const template = workingHours.find((w) => w.day_of_week === date.getDay());
+  if (
+    !template ||
+    !template.break_start_time ||
+    !template.break_end_time
+  ) {
+    return [window];
+  }
+
+  const breakStart = combineDateAndMinutes(
+    date,
+    timeStringToMinutes(template.break_start_time),
+  );
+  const breakEnd = combineDateAndMinutes(
+    date,
+    timeStringToMinutes(template.break_end_time),
+  );
+
+  const windows: DayWindow[] = [];
+  if (breakStart > window.start) {
+    windows.push({ start: window.start, end: breakStart });
+  }
+  if (breakEnd < window.end) {
+    windows.push({ start: breakEnd, end: window.end });
+  }
+  return windows.length > 0 ? windows : [window];
+}
+
 function rangesOverlap(
   aStart: Date,
   aEnd: Date,
@@ -74,35 +123,45 @@ function rangesOverlap(
 }
 
 /** Generates bookable slot start times for a single day, excluding past
- * times and anything overlapping an already-booked appointment. */
+ * times and anything overlapping an already-booked appointment.
+ *
+ * Slot start times are spaced `slotIntervalMinutes` apart, while each slot
+ * still reserves the full `durationMinutes` of the chosen procedure — so a
+ * candidate is only kept when `[cursor, cursor + duration)` fits entirely
+ * inside a working window (splitting around a lunch break). */
 export function generateSlotsForDay(
   date: Date,
   durationMinutes: number,
+  slotIntervalMinutes: number,
   workingHours: DoctorWorkingHours[],
   overrides: DoctorScheduleOverride[],
   bookedSlots: BookedSlot[],
 ): Date[] {
-  const window = getEffectiveDayWindow(date, workingHours, overrides);
-  if (!window) return [];
+  const windows = getEffectiveDayWindows(date, workingHours, overrides);
+  if (windows.length === 0) return [];
 
   const now = new Date();
+  const step = slotIntervalMinutes > 0 ? slotIntervalMinutes : durationMinutes;
   const slots: Date[] = [];
-  let cursor = window.start;
 
-  while (addMinutes(cursor, durationMinutes) <= window.end) {
-    const slotEnd = addMinutes(cursor, durationMinutes);
+  for (const window of windows) {
+    let cursor = window.start;
 
-    const overlapsBooked = bookedSlots.some((booked) => {
-      const bookedStart = new Date(booked.scheduled_at);
-      const bookedEnd = addMinutes(bookedStart, booked.duration_minutes);
-      return rangesOverlap(cursor, slotEnd, bookedStart, bookedEnd);
-    });
+    while (addMinutes(cursor, durationMinutes) <= window.end) {
+      const slotEnd = addMinutes(cursor, durationMinutes);
 
-    if (!isBefore(cursor, now) && !overlapsBooked) {
-      slots.push(cursor);
+      const overlapsBooked = bookedSlots.some((booked) => {
+        const bookedStart = new Date(booked.scheduled_at);
+        const bookedEnd = addMinutes(bookedStart, booked.duration_minutes);
+        return rangesOverlap(cursor, slotEnd, bookedStart, bookedEnd);
+      });
+
+      if (!isBefore(cursor, now) && !overlapsBooked) {
+        slots.push(cursor);
+      }
+
+      cursor = addMinutes(cursor, step);
     }
-
-    cursor = addMinutes(cursor, durationMinutes);
   }
 
   return slots;
@@ -113,6 +172,7 @@ export function generateSlotsForRange(
   fromDate: Date,
   daysCount: number,
   durationMinutes: number,
+  slotIntervalMinutes: number,
   workingHours: DoctorWorkingHours[],
   overrides: DoctorScheduleOverride[],
   bookedSlots: BookedSlot[],
@@ -124,7 +184,14 @@ export function generateSlotsForRange(
     const date = addDays(start, i);
     result.set(
       formatSlotDate(date),
-      generateSlotsForDay(date, durationMinutes, workingHours, overrides, bookedSlots),
+      generateSlotsForDay(
+        date,
+        durationMinutes,
+        slotIntervalMinutes,
+        workingHours,
+        overrides,
+        bookedSlots,
+      ),
     );
   }
 

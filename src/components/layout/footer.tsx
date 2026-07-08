@@ -15,6 +15,12 @@ export function Footer() {
             Врачи
           </Link>
           <Link
+            href="/about"
+            className="text-sm text-muted-foreground transition-colors duration-200 hover:text-slate-900 cursor-pointer"
+          >
+            О нас
+          </Link>
+          <Link
             href="/book"
             className="text-sm text-muted-foreground transition-colors duration-200 hover:text-slate-900 cursor-pointer"
           >

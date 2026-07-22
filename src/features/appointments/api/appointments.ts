@@ -7,7 +7,12 @@ import type {
 import type { BookingFormValues } from "@/features/appointments/schemas/booking-schema";
 
 export async function createAppointment(
-  values: BookingFormValues & { durationMinutes: number; priceKzt: number },
+  values: BookingFormValues & {
+    durationMinutes: number;
+    priceKzt: number;
+    /** Defaults to "pending" (public flow). Nurses may pass "confirmed". */
+    status?: AppointmentStatus;
+  },
 ): Promise<void> {
   const supabase = createClient();
   const { error } = await supabase.from("appointments").insert({
@@ -18,7 +23,7 @@ export async function createAppointment(
     scheduled_at: values.scheduledAt,
     duration_minutes: values.durationMinutes,
     price_kzt: values.priceKzt,
-    status: "pending",
+    status: values.status ?? "pending",
   });
 
   if (error) throw error;

@@ -5,6 +5,7 @@ import { DashboardShell } from "@/features/dashboard/components/dashboard-shell"
 import { AppointmentFilters } from "@/features/dashboard/components/appointment-filters";
 import { NurseAppointmentTable } from "@/features/appointments/components/nurse-appointment-table";
 import { NurseWeekView } from "@/features/appointments/components/nurse-week-view";
+import { NurseBookAppointmentDialog } from "@/features/appointments/components/nurse-book-appointment-dialog";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { AppointmentStatus } from "@/types";
 
@@ -22,16 +23,19 @@ export default function NurseDashboardPage() {
       title="Заявки на приём"
       description="Просматривайте, подтверждайте или отклоняйте заявки."
     >
-      <Tabs value={view} onValueChange={setView} className="mb-6">
-        <TabsList>
-          <TabsTrigger value="list" className="cursor-pointer">
-            Список
-          </TabsTrigger>
-          <TabsTrigger value="week" className="cursor-pointer">
-            Неделя
-          </TabsTrigger>
-        </TabsList>
-      </Tabs>
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <Tabs value={view} onValueChange={setView}>
+          <TabsList>
+            <TabsTrigger value="list" className="cursor-pointer">
+              Список
+            </TabsTrigger>
+            <TabsTrigger value="week" className="cursor-pointer">
+              Неделя
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+        <NurseBookAppointmentDialog />
+      </div>
 
       <AppointmentFilters
         status={status}

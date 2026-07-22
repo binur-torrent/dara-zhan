@@ -24,10 +24,16 @@ export function useCreateAppointment() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (
-      values: BookingFormValues & { durationMinutes: number; priceKzt: number },
+      values: BookingFormValues & {
+        durationMinutes: number;
+        priceKzt: number;
+        status?: AppointmentStatus;
+      },
     ) => createAppointment(values),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["booked-slots"] });
+      queryClient.invalidateQueries({ queryKey: ["nurse-appointments"] });
+      queryClient.invalidateQueries({ queryKey: ["doctor-appointments"] });
     },
   });
 }

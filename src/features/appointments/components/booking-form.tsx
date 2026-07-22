@@ -29,9 +29,24 @@ import {
 } from "@/features/appointments/schemas/booking-schema";
 import { formatPriceKzt } from "@/lib/utils";
 
-export function BookingForm() {
+interface BookingFormProps {
+  /**
+   * "public" — anonymous patient booking (status stays "pending").
+   * "nurse" — a nurse booking a client directly (creates a "confirmed"
+   * appointment that the doctor sees immediately).
+   */
+  variant?: "public" | "nurse";
+  /** Optional callback fired after a successful booking (e.g. close a dialog). */
+  onSuccess?: () => void;
+}
+
+export function BookingForm({
+  variant = "public",
+  onSuccess,
+}: BookingFormProps = {}) {
   const searchParams = useSearchParams();
   const preselectedDoctor = searchParams.get("doctor");
+  const isNurse = variant === "nurse";
 
   const { data: doctors = [], isLoading: doctorsLoading } = useDoctors();
   const createMutation = useCreateAppointment();
@@ -78,29 +93,41 @@ export function BookingForm() {
       ...values,
       durationMinutes: selectedProcedure.duration_minutes,
       priceKzt: selectedProcedure.price_kzt,
+      status: isNurse ? "confirmed" : "pending",
     });
+    onSuccess?.();
   });
 
   if (createMutation.isSuccess) {
     return (
-      <Card className="mx-auto max-w-lg border-emerald-200 bg-emerald-50/50">
+      <Card
+        className={
+          isNurse
+            ? "border-emerald-200 bg-emerald-50/50"
+            : "mx-auto max-w-lg border-emerald-200 bg-emerald-50/50"
+        }
+      >
         <CardContent className="flex flex-col items-center gap-4 py-12 text-center">
           <CheckCircle2 className="h-14 w-14 text-emerald-600" aria-hidden />
           <div className="space-y-2">
             <h2 className="text-xl font-semibold text-slate-900">
-              Заявка отправлена
+              {isNurse ? "Клиент записан" : "Заявка отправлена"}
             </h2>
             <p className="text-sm text-muted-foreground max-w-sm">
-              Ваша заявка на приём в статусе ожидания. Наш администратор
-              рассмотрит её и свяжется с вами для подтверждения.
+              {isNurse
+                ? "Приём подтверждён и сразу отображается у врача в расписании."
+                : "Ваша заявка на приём в статусе ожидания. Наш администратор рассмотрит её и свяжется с вами для подтверждения."}
             </p>
           </div>
           <Button
             variant="outline"
             className="cursor-pointer"
-            onClick={() => createMutation.reset()}
+            onClick={() => {
+              form.reset();
+              createMutation.reset();
+            }}
           >
-            Записаться ещё раз
+            {isNurse ? "Записать ещё" : "Записаться ещё раз"}
           </Button>
         </CardContent>
       </Card>
@@ -108,13 +135,21 @@ export function BookingForm() {
   }
 
   return (
-    <Card className="mx-auto max-w-2xl border-slate-200/80 shadow-sm">
+    <Card
+      className={
+        isNurse
+          ? "border-none bg-transparent shadow-none"
+          : "mx-auto max-w-2xl border-slate-200/80 shadow-sm"
+      }
+    >
       <CardHeader>
         <CardTitle className="text-xl text-slate-900">
-          Запись на приём
+          {isNurse ? "Записать клиента на приём" : "Запись на приём"}
         </CardTitle>
         <p className="text-sm text-muted-foreground">
-          Регистрация не нужна. Заполните форму ниже.
+          {isNurse
+            ? "Приём будет создан сразу как подтверждённый и появится у врача."
+            : "Регистрация не нужна. Заполните форму ниже."}
         </p>
       </CardHeader>
       <CardContent>
@@ -122,7 +157,9 @@ export function BookingForm() {
           {createMutation.isError && (
             <Alert variant="destructive">
               <AlertDescription>
-                Не удалось отправить заявку. Попробуйте ещё раз.
+                {isNurse
+                  ? "Не удалось создать приём. Попробуйте ещё раз."
+                  : "Не удалось отправить заявку. Попробуйте ещё раз."}
               </AlertDescription>
             </Alert>
           )}
@@ -213,7 +250,9 @@ export function BookingForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="patientName">Ваше имя</Label>
+            <Label htmlFor="patientName">
+              {isNurse ? "Имя клиента" : "Ваше имя"}
+            </Label>
             <Input
               id="patientName"
               placeholder="Имя и фамилия"
@@ -227,7 +266,9 @@ export function BookingForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="patientPhone">Номер телефона</Label>
+            <Label htmlFor="patientPhone">
+              {isNurse ? "Номер телефона клиента" : "Номер телефона"}
+            </Label>
             <Input
               id="patientPhone"
               type="tel"
@@ -249,17 +290,26 @@ export function BookingForm() {
             {createMutation.isPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden />
-                Отправка…
+                {isNurse ? "Создание…" : "Отправка…"}
               </>
+            ) : isNurse ? (
+              "Записать клиента"
             ) : (
               "Отправить заявку"
             )}
           </Button>
 
-          <p className="text-center text-xs text-muted-foreground">
-            Статус будет <strong>«в ожидании»</strong> до подтверждения нашим
-            персоналом.
-          </p>
+          {isNurse ? (
+            <p className="text-center text-xs text-muted-foreground">
+              Приём создаётся сразу как <strong>«подтверждённый»</strong> и
+              появляется у врача.
+            </p>
+          ) : (
+            <p className="text-center text-xs text-muted-foreground">
+              Статус будет <strong>«в ожидании»</strong> до подтверждения нашим
+              персоналом.
+            </p>
+          )}
         </form>
       </CardContent>
     </Card>

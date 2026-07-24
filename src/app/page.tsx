@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
 const features = [
   {
     icon: CalendarCheck,
-    title: "Запись за пару минут",
+    title: "Запись за пару кликов",
     description:
       "Выберите врача, процедуру и время — достаточно указать имя и телефон.",
   },
@@ -53,15 +53,15 @@ export default function HomePage() {
               <span className="text-primary">стало проще</span>
             </h1>
             <p className="mt-6 text-lg leading-relaxed text-muted-foreground">
-              Запишитесь на приём онлайн в 1–2 клика. Регистрация не нужна —
-              наш администратор лично подтвердит ваш визит.
+              Запишитесь на приём онлайн в 1–2 клика. Регистрация не нужна — наш
+              администратор лично подтвердит ваш визит.
             </p>
             <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Link
                 href="/book"
                 className={cn(
                   buttonVariants({ size: "lg" }),
-                  "w-full cursor-pointer justify-between px-8 sm:w-auto sm:min-w-[230px]",
+                  "w-full cursor-pointer justify-between px-8 sm:w-auto sm:min-w-[230px]"
                 )}
               >
                 <span className="flex-1 text-center">Записаться на приём</span>
@@ -71,7 +71,7 @@ export default function HomePage() {
                 href="/doctors"
                 className={cn(
                   buttonVariants({ variant: "outline", size: "lg" }),
-                  "w-full cursor-pointer px-8 sm:w-auto sm:min-w-[230px]",
+                  "w-full cursor-pointer px-8 sm:w-auto sm:min-w-[230px]"
                 )}
               >
                 Наши врачи
@@ -120,7 +120,7 @@ export default function HomePage() {
               href="/doctors"
               className={cn(
                 buttonVariants({ variant: "outline" }),
-                "cursor-pointer",
+                "cursor-pointer"
               )}
             >
               Все врачи
